@@ -1,4 +1,5 @@
 import "@/styles/globals.css";
+import { Plus_Jakarta_Sans } from 'next/font/google';
 
 import { type Metadata } from "next";
 import { Geist } from "next/font/google";
@@ -16,11 +17,17 @@ const geist = Geist({
   variable: "--font-geist-sans",
 });
 
+const jakarta = Plus_Jakarta_Sans({
+  subsets: ['latin'],
+  variable: '--font-jakarta', // Opcional: para usar como variável CSS
+  weight: ['400', '500', '600', '700'], // Especifique os pesos necessários
+});
+
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${geist.variable}`}>
+    <html lang="en" className={`${geist.variable} ${jakarta.variable}`}>
       <body>
         <TRPCReactProvider>{children}</TRPCReactProvider>
       </body>
