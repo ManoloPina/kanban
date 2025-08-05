@@ -20,7 +20,9 @@ export const verifyEmailSchema = z.object({
 });
 
 export type RegisterFormState = {
-  errors: z.inferFlattenedErrors<typeof registerSchema>['fieldErrors'];
+  errors: z.inferFlattenedErrors<typeof registerSchema>['fieldErrors'] & {
+    _form?: string[];
+  };
   success: boolean;
 };
 

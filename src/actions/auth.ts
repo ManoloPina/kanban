@@ -6,6 +6,7 @@ import * as bcrypt from 'bcrypt';
 import { revalidatePath } from 'next/cache';
 import { registerSchema, type RegisterFormState } from '@/model/auth';
 import { api } from '@/trpc/server';
+import { TRPCError } from '@trpc/server';
 
 export async function registerUser(
   prevState: unknown,
@@ -15,11 +16,6 @@ export async function registerUser(
   const email = formData.get('email') as string;
   const password = formData.get('password') as string;
   const confirm = formData.get('confirm') as string;
-
-  console.log({
-    password,
-    confirm,
-  });
 
   const validation = registerSchema.safeParse({
     name,
@@ -31,14 +27,21 @@ export async function registerUser(
   if (!validation.success) {
     return { errors: validation.error.flatten().fieldErrors, success: false };
   }
+  try {
+    const { success } = await api.auth.register({
+      email,
+      password,
+      confirm,
+      name,
+    });
 
-  const { success } = await api.auth.register({
-    email,
-    password,
-    confirm,
-    name,
-  });
-
-  revalidatePath('/auth/sign-in');
-  return { errors: {}, success };
+    revalidatePath('/auth/sign-in');
+    return { errors: {}, success };
+  } catch (err) {
+    let message = 'Unknown error';
+    if (err instanceof TRPCError) {
+      message = err.message;
+    }
+    return { errors: { _form: [message] }, success: false };
+  }
 }

@@ -1,5 +1,5 @@
 'use client';
-import { useActionState, useEffect } from 'react';
+import { useActionState, useEffect, useState } from 'react';
 import { registerUser } from '@/actions/auth';
 import { toast } from 'sonner';
 import { redirect } from 'next/navigation';
@@ -13,6 +13,7 @@ import {
   AlertDescription,
   AlertTitle,
 } from '@/app/_components/ui/alert';
+import ViewPasswordButton from './view-password-button';
 
 import { type RegisterFormState } from '@/model/auth';
 import { cn } from '@/lib/utils';
@@ -25,6 +26,9 @@ export default function SignUpForm({}) {
     FormData
   >(registerUser, initialState);
 
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+
   useEffect(() => {
     if (state.success) {
       toast.success('User has been registered', {
@@ -33,6 +37,14 @@ export default function SignUpForm({}) {
           label: 'Login',
           onClick: () => redirect('/auth/sign-in'),
         },
+        position: 'top-center',
+        duration: 4000,
+      });
+    }
+
+    if (state.errors?._form) {
+      toast.error('An error has occurred', {
+        description: state.errors._form[0],
         position: 'top-center',
         duration: 4000,
       });
@@ -71,7 +83,7 @@ export default function SignUpForm({}) {
           <span className="text-xs text-red-500">{state.errors.name[0]}</span>
         )}
       </div>
-      <div className="flex flex-col gap-2">
+      <div className="relative flex flex-col gap-2">
         <Label
           className={cn(
             'font-semibold',
@@ -87,6 +99,7 @@ export default function SignUpForm({}) {
           placeholder="example@email.com"
           aria-invalid={!!state.errors.email}
         />
+
         {state.errors.email && (
           <span className="text-xs text-red-500">{state.errors.email[0]}</span>
         )}
@@ -100,13 +113,24 @@ export default function SignUpForm({}) {
         >
           Password
         </Label>
-        <Input
-          placeholder="Password"
-          type="password"
-          name="password"
-          aria-invalid={!!state.errors.password}
-          className={cn(state.errors.password && '!border-destructive')}
-        />
+        <div className="relative flex flex-col">
+          <Input
+            placeholder="Password"
+            type={showPassword ? 'text' : 'password'}
+            name="password"
+            aria-invalid={!!state.errors.password}
+            className={cn(state.errors.password && '!border-destructive')}
+          />
+          <ViewPasswordButton
+            className="absolute top-1/2 right-1 -translate-y-1/2"
+            showPassword={showPassword}
+            onChange={(e) => {
+              e?.preventDefault();
+              setShowPassword(!showPassword);
+            }}
+          />
+        </div>
+
         {state.errors.password && (
           <span className="text-xs text-red-500">
             {state.errors.password[0]}
@@ -122,13 +146,29 @@ export default function SignUpForm({}) {
         >
           Confirm your password
         </Label>
-        <Input
-          placeholder="Password"
-          type="password"
-          name="confirm"
-          aria-invalid={!!state.errors.password}
-          className={cn(!!state.errors.confirm && '!border-destructive')}
-        />
+        <div className="relative flex flex-col">
+          <Input
+            placeholder="Password"
+            type={showConfirm ? 'text' : 'password'}
+            name="confirm"
+            aria-invalid={!!state.errors.password}
+            className={cn(!!state.errors.confirm && '!border-destructive')}
+          />
+          <ViewPasswordButton
+            className="absolute top-1/2 right-1 -translate-y-1/2"
+            showPassword={showConfirm}
+            onChange={(e) => {
+              e?.preventDefault();
+              setShowConfirm(!showConfirm);
+            }}
+          />
+        </div>
+
+        {state.errors.confirm && (
+          <span className="text-xs text-red-500">
+            {state.errors.confirm[0]}
+          </span>
+        )}
       </div>
       <Button type="submit" className="w-full">
         {isPending ? (

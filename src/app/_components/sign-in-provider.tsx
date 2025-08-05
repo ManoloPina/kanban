@@ -7,7 +7,7 @@ import Image from 'next/image';
 
 function SignInProvider() {
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex w-full flex-col gap-4">
       <Button
         size="lg"
         variant="outline"

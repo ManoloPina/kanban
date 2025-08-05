@@ -25,8 +25,10 @@ export default async function SignUp() {
         <div className="flex w-full flex-col items-center gap-6">
           <Logo />
           <Card className="w-full max-w-md">
-            <CardHeader>
-              <CardTitle>Create Account</CardTitle>
+            <CardHeader className="flex w-full flex-col gap-4">
+              <CardTitle className="w-full text-center">
+                Create Account
+              </CardTitle>
               <SignInProvider />
             </CardHeader>
             <CardContent>
