@@ -5,6 +5,9 @@ import { type Metadata } from 'next';
 import { Geist } from 'next/font/google';
 
 import { TRPCReactProvider } from '@/trpc/react';
+import { Toaster } from './_components/ui/sonner';
+import { SessionProvider } from 'next-auth/react';
+import ThemeProvider from '@/app/_components/theme-provider';
 
 export const metadata: Metadata = {
   title: 'Create T3 App',
@@ -27,9 +30,25 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${geist.variable} ${jakarta.variable}`}>
+    <html
+      lang="en"
+      className={`${geist.variable} ${jakarta.variable}`}
+      suppressHydrationWarning
+    >
       <body>
-        <TRPCReactProvider>{children}</TRPCReactProvider>
+        <TRPCReactProvider>
+          <SessionProvider>
+            <ThemeProvider
+              attribute="class"
+              defaultTheme="dark"
+              enableSystem
+              disableTransitionOnChange
+            >
+              {children}
+              <Toaster />
+            </ThemeProvider>
+          </SessionProvider>
+        </TRPCReactProvider>
       </body>
     </html>
   );

@@ -3,10 +3,14 @@ import Link from 'next/link';
 import { LatestPost } from '@/app/_components/post';
 import { auth } from '@/server/auth';
 import { api, HydrateClient } from '@/trpc/server';
+import { redirect } from 'next/navigation';
 
 export default async function Home() {
   const hello = await api.post.hello({ text: 'from tRPC' });
   const session = await auth();
+  console.log('🚀 ~ Home ~ session:', session);
+
+  if (!session?.user) redirect('/auth/sign-in');
 
   if (session?.user) {
     void api.post.getLatest.prefetch();
