@@ -1,6 +1,7 @@
-import { relations, sql } from "drizzle-orm";
-import { index, pgTableCreator, primaryKey } from "drizzle-orm/pg-core";
-import { type AdapterAccount } from "next-auth/adapters";
+import { relations, sql } from 'drizzle-orm';
+import { index, pgTableCreator, primaryKey } from 'drizzle-orm/pg-core';
+import { type AdapterAccount } from 'next-auth/adapters';
+import { title } from 'process';
 
 /**
  * This is an example of how to use the multi-project schema feature of Drizzle ORM. Use the same
@@ -11,7 +12,7 @@ import { type AdapterAccount } from "next-auth/adapters";
 export const createTable = pgTableCreator((name) => `kanban_${name}`);
 
 export const posts = createTable(
-  "post",
+  'post',
   (d) => ({
     id: d.integer().primaryKey().generatedByDefaultAsIdentity(),
     name: d.varchar({ length: 256 }),
@@ -26,12 +27,12 @@ export const posts = createTable(
     updatedAt: d.timestamp({ withTimezone: true }).$onUpdate(() => new Date()),
   }),
   (t) => [
-    index("created_by_idx").on(t.createdById),
-    index("name_idx").on(t.name),
+    index('created_by_idx').on(t.createdById),
+    index('name_idx').on(t.name),
   ],
 );
 
-export const users = createTable("user", (d) => ({
+export const users = createTable('user', (d) => ({
   id: d
     .varchar({ length: 255 })
     .notNull()
@@ -41,10 +42,11 @@ export const users = createTable("user", (d) => ({
   email: d.varchar({ length: 255 }).notNull(),
   emailVerified: d
     .timestamp({
-      mode: "date",
+      mode: 'date',
       withTimezone: true,
     })
     .default(sql`CURRENT_TIMESTAMP`),
+  password: d.varchar({ length: 255 }),
   image: d.varchar({ length: 255 }),
 }));
 
@@ -53,13 +55,13 @@ export const usersRelations = relations(users, ({ many }) => ({
 }));
 
 export const accounts = createTable(
-  "account",
+  'account',
   (d) => ({
     userId: d
       .varchar({ length: 255 })
       .notNull()
       .references(() => users.id),
-    type: d.varchar({ length: 255 }).$type<AdapterAccount["type"]>().notNull(),
+    type: d.varchar({ length: 255 }).$type<AdapterAccount['type']>().notNull(),
     provider: d.varchar({ length: 255 }).notNull(),
     providerAccountId: d.varchar({ length: 255 }).notNull(),
     refresh_token: d.text(),
@@ -72,7 +74,7 @@ export const accounts = createTable(
   }),
   (t) => [
     primaryKey({ columns: [t.provider, t.providerAccountId] }),
-    index("account_user_id_idx").on(t.userId),
+    index('account_user_id_idx').on(t.userId),
   ],
 );
 
@@ -81,16 +83,16 @@ export const accountsRelations = relations(accounts, ({ one }) => ({
 }));
 
 export const sessions = createTable(
-  "session",
+  'session',
   (d) => ({
     sessionToken: d.varchar({ length: 255 }).notNull().primaryKey(),
     userId: d
       .varchar({ length: 255 })
       .notNull()
       .references(() => users.id),
-    expires: d.timestamp({ mode: "date", withTimezone: true }).notNull(),
+    expires: d.timestamp({ mode: 'date', withTimezone: true }).notNull(),
   }),
-  (t) => [index("t_user_id_idx").on(t.userId)],
+  (t) => [index('t_user_id_idx').on(t.userId)],
 );
 
 export const sessionsRelations = relations(sessions, ({ one }) => ({
@@ -98,11 +100,118 @@ export const sessionsRelations = relations(sessions, ({ one }) => ({
 }));
 
 export const verificationTokens = createTable(
-  "verification_token",
+  'verification_token',
   (d) => ({
     identifier: d.varchar({ length: 255 }).notNull(),
     token: d.varchar({ length: 255 }).notNull(),
-    expires: d.timestamp({ mode: "date", withTimezone: true }).notNull(),
+    expires: d.timestamp({ mode: 'date', withTimezone: true }).notNull(),
   }),
   (t) => [primaryKey({ columns: [t.identifier, t.token] })],
 );
+
+export const boards = createTable('board', (d) => ({
+  id: d
+    .varchar({ length: 255 })
+    .notNull()
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  name: d.varchar({ length: 255 }).notNull(),
+  createdBy: d
+    .varchar('created_by', { length: 255 })
+    .notNull()
+    .references(() => users.id),
+  createdAt: d
+    .timestamp('created_at', { withTimezone: true })
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
+  updatedAt: d
+    .timestamp('updated_at', { withTimezone: true })
+    .$onUpdate(() => new Date()),
+  deletedAt: d.timestamp('deleted_at', { withTimezone: true }),
+}));
+
+export const columns = createTable('column', (d) => ({
+  id: d
+    .varchar({ length: 255 })
+    .notNull()
+    .primaryKey()
+    .$default(() => crypto.randomUUID()),
+  name: d.varchar({ length: 255 }).notNull(),
+  boardId: d
+    .varchar('board_id', { length: 255 })
+    .notNull()
+    .references(() => boards.id),
+  createdAt: d
+    .timestamp('created_at', { withTimezone: true })
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
+  updatedAt: d
+    .timestamp('updated_at', { withTimezone: true })
+    .$onUpdate(() => new Date()),
+  deletedAt: d.timestamp('deleted_at', { withTimezone: true }),
+}));
+
+export const tasks = createTable('task', (d) => ({
+  id: d
+    .varchar({ length: 255 })
+    .primaryKey()
+    .$default(() => crypto.randomUUID()),
+  title: d.varchar({ length: 255 }).notNull(),
+  description: d.varchar({ length: 255 }),
+  columnId: d
+    .varchar('column_id', { length: 255 })
+    .notNull()
+    .references(() => columns.id),
+  createdAt: d
+    .timestamp('created_at', { withTimezone: true })
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
+  updatedAt: d
+    .timestamp('updated_at', { withTimezone: true })
+    .$onUpdate(() => new Date()),
+  deletedAt: d.timestamp('deleted_at', { withTimezone: true }),
+}));
+
+export const subtasks = createTable('subtask', (d) => ({
+  id: d
+    .varchar({ length: 255 })
+    .primaryKey()
+    .$default(() => crypto.randomUUID()),
+  title: d.varchar({ length: 255 }).notNull(),
+  taskId: d.varchar('task_id', { length: 255 }).references(() => tasks.id),
+  done: d.boolean().default(false),
+  createdAt: d
+    .timestamp('created_at', { withTimezone: true })
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
+  updatedAt: d
+    .timestamp('updated_at', { withTimezone: true })
+    .$onUpdate(() => new Date()),
+  deletedAt: d.timestamp('deleted_at', { withTimezone: true }),
+}));
+
+export const boardsRelations = relations(boards, ({ many }) => ({
+  columns: many(columns),
+}));
+
+export const columnsRelationship = relations(columns, ({ one, many }) => ({
+  board: one(boards, { fields: [columns.boardId], references: [boards.id] }),
+  tasks: many(tasks),
+}));
+
+export const columnsRelations = relations(columns, ({ many }) => ({
+  tasks: many(tasks),
+}));
+
+export const tasksRelations = relations(tasks, ({ many }) => ({
+  subtasks: many(subtasks),
+}));
+
+export const tasksRelationship = relations(tasks, ({ one, many }) => ({
+  column: one(columns, { fields: [tasks.columnId], references: [columns.id] }),
+  subtasks: many(subtasks),
+}));
+
+export const subtasksRelations = relations(subtasks, ({ one }) => ({
+  task: one(tasks, { fields: [subtasks.taskId], references: [tasks.id] }),
+}));
