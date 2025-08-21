@@ -33,7 +33,9 @@ import { toast } from 'sonner';
 
 export default function SignIn() {
   const { data: session } = useSession();
+
   if (session?.user) redirect('/');
+
   const form = useForm<LoginReq>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
@@ -45,12 +47,13 @@ export default function SignIn() {
   const onSubmit = async (values: LoginReq) => {
     if (loginSchema.safeParse(values)) {
       const { email, password } = values;
+
       const res = await signIn('credentials', {
         redirect: false,
         email,
         password,
       });
-      console.log({ res });
+
       if (res?.error)
         toast.error('Invalid credentials', {
           position: 'top-center',
