@@ -2,6 +2,7 @@ import { createTRPCRouter, protectedProcedure } from '@/server/api/trpc';
 import { eq } from 'drizzle-orm';
 import { db } from '@/server/db';
 import { boards, columns, subtasks, tasks } from '../../db/schema';
+import { boardFormSchema } from '@/model/board';
 import { TRPCError } from '@trpc/server';
 import z from 'zod';
 
@@ -128,6 +129,7 @@ export const boardRouter = createTRPCRouter({
             columns: {
               with: {
                 tasks: {
+                  where: (t, { isNull }) => isNull(t.deletedAt),
                   with: {
                     subtasks: true,
                   },
@@ -148,5 +150,51 @@ export const boardRouter = createTRPCRouter({
           message,
         });
       }
+    }),
+  createBoard: protectedProcedure
+    .input(boardFormSchema)
+    .mutation(async ({ input, ctx }) => {
+      console.log('🚀 ~ ctx:', ctx);
+      console.log('🚀 ~ input:', input);
+      return await db.transaction(async (tx) => {
+        const [board] = await tx
+          .insert(boards)
+          .values({
+            createdBy: ctx.session.user.id,
+            name: input.name.trim(),
+          })
+          .returning();
+
+        if (!board) {
+          throw new TRPCError({
+            code: 'INTERNAL_SERVER_ERROR',
+            message: 'Failed to create board',
+          });
+        }
+
+        const cleanedColumns = input.columns
+          .map((column) => ({ name: column.name.trim() }))
+          .filter((column) => column.name.length > 0);
+
+        if (cleanedColumns.length === 0) {
+          throw new TRPCError({
+            code: 'BAD_REQUEST',
+            message: 'A board must have at least one column',
+          });
+        }
+
+        await tx.insert(columns).values(
+          cleanedColumns.map((column) => ({
+            ...column,
+            boardId: board.id,
+          })),
+        );
+        return tx.query.boards.findFirst({
+          where: (_board, { eq }) => eq(_board.id, board.id),
+          with: {
+            columns: true,
+          },
+        });
+      });
     }),
 });
