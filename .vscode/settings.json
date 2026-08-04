@@ -1,0 +1,8 @@
+{
+  "cSpell.words": ["sucessefyly"],
+  "chat.byokUtilityModelDefault": "mainAgent",
+  "tailwindCSS.experimental.classRegex": [
+    ["cva\\(([^)]*)\\)", "[\"'`]([^\"'`]*).*?[\"'`]"],
+    ["cn\\(([^)]*)\\)", "[\"'`]([^\"'`]*).*?[\"'`]"]
+  ]
+}
