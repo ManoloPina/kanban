@@ -153,7 +153,6 @@ function BoardForm({ board = null }: Props) {
             </li>
           ))}
           <Button
-            size="sm"
             className="text-primary flex flex-row items-center rounded-full
               bg-white hover:text-white"
             onClick={() => append({ name: '' })}
