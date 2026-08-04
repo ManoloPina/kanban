@@ -46,3 +46,6 @@ yarn-error.log*
 .idea
 
 copilot-instructions.md
+
+# one-off scripts (e.g. scripts/create-issues.sh) - not versioned
+/scripts/

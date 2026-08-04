@@ -6,7 +6,11 @@ import {
   type subtasks,
 } from '@/server/db/schema';
 
-import { createInsertSchema, createSelectSchema } from 'drizzle-zod';
+import {
+  createInsertSchema,
+  createSelectSchema,
+  createUpdateSchema,
+} from 'drizzle-zod';
 
 export type Subtask = typeof subtasks.$inferSelect;
 
@@ -42,7 +46,16 @@ export const columnsSchema = z.object({
   name: z.string().trim().min(1, 'Column name is required').max(255),
 });
 
+export const columnUpdateSchema = columnsSchema.extend({
+  id: z.string().uuid().optional(),
+});
+
 export const boardFormSchema = z.object({
   name: z.string().trim().min(1, 'Board name is required').max(255),
   columns: z.array(columnsSchema).min(1, 'Add at least one column'),
+});
+
+export const boardUpdateSchema = boardFormSchema.extend({
+  id: z.string().uuid(),
+  columns: z.array(columnUpdateSchema).min(1, 'Add at least one column'),
 });

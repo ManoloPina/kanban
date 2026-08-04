@@ -29,11 +29,13 @@ interface Props {
 type Form = z.infer<typeof boardFormSchema>;
 
 function BoardForm({ board = null }: Props) {
+  const isEditing = !!board?.id;
+
   const utils = api.useUtils();
   const router = useRouter();
   const { closeBoardDialog } = useBoardDialog();
 
-  const { mutate, isPending } = api.board.createBoard.useMutation({
+  const create = api.board.createBoard.useMutation({
     onSuccess: async (createdBoard) => {
       await utils.board.getBoards.invalidate();
       if (createdBoard) {
@@ -46,18 +48,43 @@ function BoardForm({ board = null }: Props) {
       toast.error(err.message ?? 'Was not possible to create the board');
     },
   });
+
+  const update = api.board.updateBoard.useMutation({
+    onSuccess: async (updatedBoard) => {
+      await Promise.all([
+        utils.board.getBoards.invalidate(),
+        utils.board.getBoardById.invalidate(board!.id),
+      ]);
+      toast.success(
+        `Board ${updatedBoard?.name ?? board!.name} updated successfully`,
+      );
+      await closeBoardDialog();
+    },
+    onError: (err) =>
+      toast.error(err.message ?? 'Was not possible to update the board'),
+  });
+
+  const isPending = isEditing ? update.isPending : create.isPending;
+
   const form = useForm<Form>({
     resolver: zodResolver(boardFormSchema),
     defaultValues: {
       columns: [{ name: '' }],
     },
   });
+
   const { append, remove, fields } = useFieldArray({
     control: form.control,
     name: 'columns',
   });
 
-  const handleSubmit = (data: Form) => mutate(data);
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key !== 'Enter') return;
+    e.preventDefault();
+    append({ name: '' });
+  };
+
+  const handleSubmit = (data: Form) => create.mutate(data);
 
   return (
     <Form {...form}>
@@ -88,7 +115,11 @@ function BoardForm({ board = null }: Props) {
                 render={({ field }) => (
                   <FormItem className="w-full">
                     <FormControl>
-                      <Input {...field} value={field.value} />
+                      <Input
+                        {...field}
+                        value={field.value}
+                        onKeyDown={handleKeyDown}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

@@ -1,29 +1,56 @@
-# Create T3 App
+# Kanban
 
-This is a [T3 Stack](https://create.t3.gg/) project bootstrapped with `create-t3-app`.
+This project is a Kanban board built for educational purposes only. It is intended to be a practical study case for a full-stack application with authentication, database persistence, and task organization in columns.
 
-## What's next? How do I make an app with this?
+## Stack
 
-We try to keep this project as simple as possible, so you can start with just the scaffolding we set up for you, and add additional things later when they become necessary.
+- Next.js
+- React
+- TypeScript
+- tRPC
+- Drizzle ORM
+- PostgreSQL
+- NextAuth
+- Tailwind CSS
+- Radix UI and shadcn/ui
 
-If you are not familiar with the different technologies used in this project, please refer to the respective docs. If you still are in the wind, please join our [Discord](https://t3.gg/discord) and ask for help.
+## Setup
 
-- [Next.js](https://nextjs.org)
-- [NextAuth.js](https://next-auth.js.org)
-- [Prisma](https://prisma.io)
-- [Drizzle](https://orm.drizzle.team)
-- [Tailwind CSS](https://tailwindcss.com)
-- [tRPC](https://trpc.io)
+1. Install the dependencies:
 
-## Learn More
+   ```bash
+   npm install
+   ```
 
-To learn more about the [T3 Stack](https://create.t3.gg/), take a look at the following resources:
+2. Create your local environment file from the example:
 
-- [Documentation](https://create.t3.gg/)
-- [Learn the T3 Stack](https://create.t3.gg/en/faq#what-learning-resources-are-currently-available) — Check out these awesome tutorials
+   ```bash
+   copy .env.example .env
+   ```
 
-You can check out the [create-t3-app GitHub repository](https://github.com/t3-oss/create-t3-app) — your feedback and contributions are welcome!
+3. Fill in the environment variables in `.env`. The main ones are defined in `src/env.js` and include the database URL, authentication secret, and the provider credentials configured in the project.
 
-## How do I deploy this?
+4. Prepare the database with Drizzle:
 
-Follow our deployment guides for [Vercel](https://create.t3.gg/en/deployment/vercel), [Netlify](https://create.t3.gg/en/deployment/netlify) and [Docker](https://create.t3.gg/en/deployment/docker) for more information.
+   ```bash
+   npm run db:generate
+   npm run db:push
+   ```
+
+## How to Run
+
+To start the application in development mode:
+
+```bash
+npm run dev
+```
+
+If you need to open the database UI, use:
+
+```bash
+npm run db:studio
+```
+
+## Purpose
+
+The purpose of this project is to provide a practical Kanban base for creating, organizing, and tracking tasks in columns, simulating a simple workflow management process.

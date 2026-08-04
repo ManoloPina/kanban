@@ -21,13 +21,20 @@ interface Props extends React.ComponentProps<typeof Dialog> {
 }
 
 function BoardDialog({ children, asChild, ...dialogProps }: Props) {
-  const { mode, boardId } = useBoardDialog();
+  const { mode, boardId, isOpen, closeBoardDialog } = useBoardDialog();
+  const isControlled = !children;
+  const open = isControlled ? isOpen : dialogProps.open;
+  const onOpenChnage = isControlled
+    ? (open: boolean) => {
+        if (!open) void closeBoardDialog();
+      }
+    : dialogProps.onOpenChange;
   const { data: board, isLoading } = api.board.getBoardById.useQuery(boardId, {
     enabled: !!boardId,
   });
 
   return (
-    <Dialog {...dialogProps}>
+    <Dialog {...dialogProps} open={open} onOpenChange={onOpenChnage}>
       {children && <DialogTrigger asChild={asChild}>{children}</DialogTrigger>}
       <DialogContent>
         <DialogHeader>
