@@ -19,14 +19,15 @@ import {
 import { Input } from '@/app/_components/ui/input';
 import { Plus, X, LoaderCircle } from 'lucide-react';
 //Types
-import { boardFormSchema, type IBoard } from '@/model/board';
+import { boardFormSchema, boardUpdateSchema, type IBoard } from '@/model/board';
 import { type z } from 'zod';
 
 interface Props {
   board?: IBoard | null;
 }
 
-type Form = z.infer<typeof boardFormSchema>;
+type CreateForm = z.infer<typeof boardFormSchema>;
+type UpdateForm = z.infer<typeof boardUpdateSchema>;
 
 function BoardForm({ board = null }: Props) {
   const isEditing = !!board?.id;
@@ -66,11 +67,17 @@ function BoardForm({ board = null }: Props) {
 
   const isPending = isEditing ? update.isPending : create.isPending;
 
-  const form = useForm<Form>({
-    resolver: zodResolver(boardFormSchema),
-    defaultValues: {
-      columns: [{ name: '' }],
-    },
+  const schema = isEditing ? boardUpdateSchema : boardFormSchema;
+
+  const form = useForm<CreateForm | UpdateForm>({
+    resolver: zodResolver(schema),
+    defaultValues: isEditing
+      ? {
+          id: board.id,
+          name: board.name,
+          columns: board.columns.map((c) => ({ id: c.id, name: c.name })),
+        }
+      : { name: '', columns: [{ name: '' }] },
   });
 
   const { append, remove, fields } = useFieldArray({
@@ -84,13 +91,26 @@ function BoardForm({ board = null }: Props) {
     append({ name: '' });
   };
 
-  const handleSubmit = (data: Form) => create.mutate(data);
+  const handleSubmit = (data: CreateForm | UpdateForm) => {
+    console.log('🟢 handleSubmit data:', data);
+    console.log('🟢 board.columns:', board?.columns);
+    if (isEditing) {
+      debugger;
+      update.mutate({ id: board!.id, ...data });
+    } else {
+      create.mutate(data as CreateForm);
+    }
+  };
+
+  const onInvalid = (errors: any) => {
+    console.log('🔴 Validation errors:', errors);
+  };
 
   return (
     <Form {...form}>
       <form
         className="flex flex-col gap-6"
-        onSubmit={form.handleSubmit(handleSubmit)}
+        onSubmit={form.handleSubmit(handleSubmit, onInvalid)}
       >
         <FormField
           control={form.control}
@@ -139,7 +159,7 @@ function BoardForm({ board = null }: Props) {
             onClick={() => append({ name: '' })}
           >
             <Plus className="size-4" />
-            <span>Add New Subtask</span>
+            <span>Add New Column</span>
           </Button>
         </ul>
         <Button
@@ -149,7 +169,7 @@ function BoardForm({ board = null }: Props) {
           className="flex items-center rounded-full"
         >
           {isPending ? <LoaderCircle className="animate-spin" /> : <Plus />}
-          Create new board
+          {isEditing ? 'Save Changes' : 'Create New Board'}
         </Button>
       </form>
     </Form>

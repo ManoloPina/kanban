@@ -3,7 +3,8 @@ import { api } from '@/trpc/react';
 import { useParams, useRouter } from 'next/navigation';
 import { useQueryState } from 'nuqs';
 import { toast } from 'sonner';
-
+import { useBoardDialog } from '@/hooks';
+//Components
 import { EllipsisVertical } from 'lucide-react';
 import { Button } from '@/app/_components/ui/button';
 import {
@@ -14,10 +15,10 @@ import {
 } from '@/app/_components/ui/dropdown-menu';
 import TaskDialog from '@/app/_components/task-dialog';
 import { Skeleton } from '@/app/_components/ui/skeleton';
-import confirmationDialog from './confirmation-dialog';
+import ConfirmationDialog from './confirmation-dialog';
 //Types
 import { ActionTypes } from '@/constants';
-import ConfirmationDialog from './confirmation-dialog';
+
 import { useState } from 'react';
 
 export default function DashboardHeader({}) {
@@ -25,6 +26,7 @@ export default function DashboardHeader({}) {
   const params = useParams<{ id: string }>();
   const boardId: string = params.id;
   const router = useRouter();
+  const { openEditBoardDialog } = useBoardDialog();
 
   const [actionType, setActionType] = useQueryState('action-type');
   const [openBoardRemovel, setOpenBoardRemoval] = useState(false);
@@ -83,7 +85,15 @@ export default function DashboardHeader({}) {
             <EllipsisVertical className="h-5 w-auto" />
           </DropdownMenuTrigger>
           <DropdownMenuContent className="p-4">
-            <DropdownMenuItem>Edit Board</DropdownMenuItem>
+            <DropdownMenuItem
+              onSelect={async (e) => {
+                e.preventDefault();
+                setDropdownOpen(false);
+                await openEditBoardDialog(boardId);
+              }}
+            >
+              Edit Board
+            </DropdownMenuItem>
             <DropdownMenuItem
               onSelect={(e) => {
                 e.preventDefault();
