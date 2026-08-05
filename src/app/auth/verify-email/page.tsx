@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { api } from '@/trpc/react';
 import { toast } from 'sonner';
@@ -23,18 +24,41 @@ import {
   AlertTitle,
 } from '@/app/_components/ui/alert';
 
-export default function VerifyEmail() {
-  const {
-    mutate: verifyEmail,
-    isSuccess,
-    isPending,
-  } = api.auth.verifyEmail.useMutation();
-  const searchParams = useSearchParams();
+const startedTokens = new Set<string>();
 
-  const handleVerifyEmail = () => {
-    const token = searchParams.get('token');
-    if (token) verifyEmail({ token });
-  };
+export default function VerifyEmail() {
+  const searchParams = useSearchParams();
+  const token = useMemo(() => searchParams.get('token'), [searchParams]);
+  const [isVerifying, setIsVerifying] = useState(false);
+  const verifyEmailMutation = api.auth.verifyEmail.useMutation({
+    onSuccess: () => {
+      toast.success('Email successfully verified');
+    },
+    onError: (err) => {
+      toast.error(err.message ?? 'Was not possible to verify this e-mail');
+    },
+    onSettled: () => {
+      setIsVerifying(false);
+    },
+  });
+
+  useEffect(() => {
+    if (!token) return;
+    if (startedTokens.has(token)) return;
+    startedTokens.add(token);
+    setIsVerifying(true);
+    verifyEmailMutation.mutate(
+      { token },
+      {
+        onError: () => {
+          startedTokens.delete(token);
+        },
+      },
+    );
+  }, [token]);
+
+  const isSuccess = verifyEmailMutation.isSuccess;
+  const isError = verifyEmailMutation.isError;
 
   return (
     <div className="bg-background flex h-full min-h-screen w-full p-6">
@@ -49,32 +73,35 @@ export default function VerifyEmail() {
               <div>
                 <Separator className="mb-4" />
 
-                {isPending ? (
-                  <LoaderCircle className="animate-spin" size={32} />
+                {isVerifying ? (
+                  <div className="flex justify-center py-4">
+                    <LoaderCircle className="animate-spin" size={32} />
+                  </div>
+                ) : isSuccess ? (
+                  <Alert>
+                    <AlertTitle>Email verified successfully!</AlertTitle>
+                    <AlertDescription>
+                      Your email has been verified. You can now sign in.
+                    </AlertDescription>
+                  </Alert>
+                ) : isError ? (
+                  <Alert variant="destructive">
+                    <AlertTitle>Verification failed</AlertTitle>
+                    <AlertDescription>
+                      {verifyEmailMutation.error?.message}
+                    </AlertDescription>
+                  </Alert>
                 ) : (
-                  <>
-                    {isSuccess ? (
-                      <Alert>
-                        <AlertTitle>Email verified successfully!</AlertTitle>
-                        <AlertDescription>
-                          Your email has been verified. You can now sign in to
-                          your account.
-                        </AlertDescription>
-                      </Alert>
-                    ) : (
-                      <p className="text-muted-foreground mb-4 text-center">
-                        To complete your registration, please confirm your email
-                        address. You must verify your email before you can sign
-                        in.
-                      </p>
-                    )}
-                  </>
+                  <p className="text-muted-foreground mb-4 text-center">
+                    Validating your verification link...
+                  </p>
                 )}
 
                 <Button
                   size="lg"
+                  disabled={!token || isVerifying}
                   className="w-full"
-                  onClick={handleVerifyEmail}
+                  onClick={() => token && verifyEmailMutation.mutate({ token })}
                 >
                   Confirm email address
                 </Button>
