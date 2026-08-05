@@ -1,5 +1,9 @@
 # Epic 7 — Qualidade
 
+> **Milestone:** `Epic 7 — Qualidade`
+> **Label pai:** `epic-7-quality`
+> **GitHub Project:** #6
+
 ## Issues
 
 - [ ] [7.1] Setup Vitest + React Testing Library

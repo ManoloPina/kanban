@@ -1,5 +1,9 @@
 # Epic 8 — DevOps & Deploy
 
+> **Milestone:** `Epic 8 — DevOps`
+> **Label pai:** `epic-8-devops`
+> **GitHub Project:** #6
+
 ## Issues
 
 - [ ] [8.1] GitHub Actions: lint + typecheck + test em PR

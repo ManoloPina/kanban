@@ -1,5 +1,9 @@
 # Epic 2 — Boards (CRUD)
 
+> **Milestone:** `Epic 2 — Boards`
+> **Label pai:** `epic-2-boards`
+> **GitHub Project:** #6
+
 ## Issues
 
 - [ ] [2.1] Corrigir `handleSubmit` que sempre chama `create` mesmo em modo edição
