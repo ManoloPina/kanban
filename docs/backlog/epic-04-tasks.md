@@ -1,5 +1,9 @@
 # Epic 4 — Tasks
 
+> **Milestone:** `Epic 4 — Tasks`
+> **Label pai:** `epic-4-tasks`
+> **GitHub Project:** #6
+
 ## Issues
 
 - [ ] [4.1] Drag-and-drop de tasks entre colunas (`@dnd-kit/core`)

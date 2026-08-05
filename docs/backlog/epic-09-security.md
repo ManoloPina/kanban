@@ -1,5 +1,9 @@
 # Epic 9 — Segurança & Observabilidade
 
+> **Milestone:** `Epic 9 — Segurança`
+> **Label pai:** `epic-9-seguranca`
+> **GitHub Project:** #6
+
 ## Issues
 
 - [ ] [9.1] Rate-limit em sign-in / register (middleware Next.js)

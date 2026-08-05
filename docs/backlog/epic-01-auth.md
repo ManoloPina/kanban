@@ -1,5 +1,9 @@
 # Epic 1 — Autenticação & conta
 
+> **Milestone:** `Epic 1 — Auth`
+> **Label pai:** `epic-1-auth`
+> **GitHub Project:** #6
+
 ## Issues
 
 - [ ] [1.1] Disparar verificação de e-mail em `useEffect` ao receber token

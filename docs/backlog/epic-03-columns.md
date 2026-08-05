@@ -1,5 +1,9 @@
 # Epic 3 — Columns
 
+> **Milestone:** `Epic 3 — Columns`
+> **Label pai:** `epic-3-columns`
+> **GitHub Project:** #6
+
 ## Issues
 
 - [ ] [3.1] Endpoints `createColumn`, `updateColumn`, `deleteColumn` (soft delete)

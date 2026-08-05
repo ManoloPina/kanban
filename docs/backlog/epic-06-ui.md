@@ -1,5 +1,9 @@
 # Epic 6 — UI/UX
 
+> **Milestone:** `Epic 6 — UI/UX`
+> **Label pai:** `epic-6-ui`
+> **GitHub Project:** #6
+
 ## Issues
 
 - [ ] [6.1] Estabilizar cor da coluna (seed determinístico por id)

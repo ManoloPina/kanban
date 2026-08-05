@@ -1,5 +1,9 @@
 # Epic 5 — Subtasks
 
+> **Milestone:** `Epic 5 — Subtasks`
+> **Label pai:** `epic-5-subtasks`
+> **GitHub Project:** #6
+
 ## Issues
 
 - [ ] [5.1] Endpoints `addSubtask` e `deleteSubtask`
