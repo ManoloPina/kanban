@@ -44,3 +44,8 @@ yarn-error.log*
 
 # idea files
 .idea
+
+copilot-instructions.md
+
+# one-off scripts (e.g. scripts/create-issues.sh) - not versioned
+/scripts/

@@ -3,10 +3,11 @@ import { api, HydrateClient } from '@/trpc/server';
 import BoardClient from '@/app/_components/board-client';
 
 interface Props {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
-export default async function Board({ params: { id } }: Props) {
+export default async function Board({ params }: Props) {
+  const { id } = await params;
   await api.board.getBoardById.prefetch(id);
 
   return (

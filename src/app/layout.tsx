@@ -1,4 +1,5 @@
 import '@/styles/globals.css';
+import { NuqsAdapter } from 'nuqs/adapters/next/app';
 import { Plus_Jakarta_Sans } from 'next/font/google';
 
 import { type Metadata } from 'next';
@@ -38,15 +39,17 @@ export default function RootLayout({
       <body>
         <TRPCReactProvider>
           <SessionProvider>
-            <ThemeProvider
-              attribute="class"
-              defaultTheme="dark"
-              enableSystem
-              disableTransitionOnChange
-            >
-              {children}
-              <Toaster />
-            </ThemeProvider>
+            <NuqsAdapter>
+              <ThemeProvider
+                attribute="class"
+                defaultTheme="dark"
+                enableSystem
+                disableTransitionOnChange
+              >
+                {children}
+                <Toaster />
+              </ThemeProvider>
+            </NuqsAdapter>
           </SessionProvider>
         </TRPCReactProvider>
       </body>
