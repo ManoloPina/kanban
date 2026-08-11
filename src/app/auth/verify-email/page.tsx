@@ -100,7 +100,7 @@ export default function VerifyEmail() {
                 <Button
                   size="lg"
                   disabled={!token || isVerifying}
-                  className="w-full"
+                  className="mt-4 w-full"
                   onClick={() => token && verifyEmailMutation.mutate({ token })}
                 >
                   Confirm email address
