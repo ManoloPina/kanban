@@ -34,8 +34,6 @@ import { toast } from 'sonner';
 export default function SignIn() {
   const { data: session } = useSession();
 
-  if (session?.user) redirect('/');
-
   const form = useForm<LoginReq>({
     resolver: zodResolver(loginSchema),
     defaultValues: {

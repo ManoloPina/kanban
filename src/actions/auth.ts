@@ -7,6 +7,7 @@ import { revalidatePath } from 'next/cache';
 import { registerSchema, type RegisterFormState } from '@/model/auth';
 import { api } from '@/trpc/server';
 import { TRPCError } from '@trpc/server';
+import { signOut } from '@/server/auth';
 
 export async function registerUser(
   prevState: unknown,
@@ -44,4 +45,8 @@ export async function registerUser(
     }
     return { errors: { _form: [message] }, success: false };
   }
+}
+
+export async function logoutAction() {
+  await signOut({ redirectTo: '/auth/sign-in' });
 }
