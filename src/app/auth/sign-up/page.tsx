@@ -17,7 +17,6 @@ import SignUpForm from '@/app/_components/sign-up-form';
 
 export default async function SignUp() {
   const session = await auth();
-  if (session?.user) redirect('/');
 
   return (
     <div className="bg-background flex h-full min-h-screen w-full p-6">
