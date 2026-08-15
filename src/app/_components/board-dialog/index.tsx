@@ -11,7 +11,7 @@ import {
   DialogTrigger,
 } from '@/app/_components/ui/dialog';
 import ViewTaskPlaceholder from '@/app/_components/placeholder/view-task-placeholder';
-import BoardForm from '@/app/_components/board-dialog/borad-form';
+import BoardForm from '@/app/_components/board-dialog/board-form';
 //Types
 import { ActionTypes } from '@/constants';
 
