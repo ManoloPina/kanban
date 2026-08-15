@@ -29,9 +29,11 @@ function BoardDialog({ children, asChild, ...dialogProps }: Props) {
         if (!open) void closeBoardDialog();
       }
     : dialogProps.onOpenChange;
-  const { data: board, isLoading } = api.board.getBoardById.useQuery(boardId, {
-    enabled: !!boardId,
-  });
+
+  const { data: board, isLoading } = (() =>
+    api.board.getBoardById.useQuery(boardId, {
+      enabled: !!boardId,
+    }))();
 
   return (
     <Dialog {...dialogProps} open={open} onOpenChange={onOpenChnage}>

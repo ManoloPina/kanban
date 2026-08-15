@@ -1,6 +1,6 @@
 'use client';
 import React from 'react';
-import { useForm, useFieldArray } from 'react-hook-form';
+import { useForm, useFieldArray, type FieldErrors } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/app/_components/ui/button';
 import { api } from '@/trpc/react';
@@ -92,17 +92,14 @@ function BoardForm({ board = null }: Props) {
   };
 
   const handleSubmit = (data: CreateForm | UpdateForm) => {
-    console.log('🟢 handleSubmit data:', data);
-    console.log('🟢 board.columns:', board?.columns);
     if (isEditing) {
-      debugger;
-      update.mutate({ id: board!.id, ...data });
+      update.mutate({ id: board.id, ...data });
     } else {
-      create.mutate(data as CreateForm);
+      create.mutate(data);
     }
   };
 
-  const onInvalid = (errors: any) => {
+  const onInvalid = (errors: FieldErrors<CreateForm | UpdateForm>) => {
     console.log('🔴 Validation errors:', errors);
   };
 
@@ -110,7 +107,9 @@ function BoardForm({ board = null }: Props) {
     <Form {...form}>
       <form
         className="flex flex-col gap-6"
-        onSubmit={form.handleSubmit(handleSubmit, onInvalid)}
+        onSubmit={(...args) =>
+          form.handleSubmit(handleSubmit, onInvalid)(...args)
+        }
       >
         <FormField
           control={form.control}
