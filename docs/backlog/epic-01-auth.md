@@ -67,43 +67,35 @@
   - **Como testar:** logar → clicar Logout → ver redirect → tentar acessar `/dashboard` → deve redirecionar pra `/auth/sign-in`.
   - **Notas:** preferir Server Action (não expõe `signOut` no client bundle); verificar se `signOut` no NextAuth v5 precisa de `await` ou não.
 
-- [ ] [1.4] Testar callback do provedor Google
-  - **Arquivo(s):** `src/server/auth/config.ts`, `src/server/auth/index.ts`, `prisma/seed.ts` (se houver), e variáveis `.env`
+- [x] [1.4] ~~Testar callback do provedor Google~~ — **não fará parte do escopo**
+  - **Decisão (2026-08-14):** o projeto suportará apenas login por **Credentials** (e-mail/senha) e **GitHub**. O provider Google foi removido do backlog e será removido do código em [1.5].
+  - **Motivo:** simplificar o escopo de autenticação e evitar manter configuração/credenciais de OAuth que não serão utilizadas.
+  - **Issue relacionada:** #7 (fechada por fora de escopo).
+
+- [x] [1.5] Remover providers não utilizados (Google, Auth0, Discord) — concluído em 2026-08-15
+  - **Arquivo(s):** `src/server/auth/config.ts`, `src/env.js`, `.env.example`, `package.json`
   - **Tipo:** tech-debt
   - **Severidade:** média
-  - **Contexto:** o provider Google está configurado em `auth.config.ts` mas nunca foi testado em ambiente real. Não há evidência de que `profile → user creation → account linking` funcionam corretamente. Possíveis bugs: `email_verified` não sendo respeitado, `picture` muito grande, callback URL errada.
-  - **O que validar (manualmente):**
-    - [ ] Login com conta Google nova (sem conta previa) → cria user com `email`, `name`, `image` corretos
-    - [ ] Login com mesma conta Google segunda vez → reconhece user existente, não duplica
-    - [ ] Email Google é o mesmo de uma conta credentials já existente → NextAuth faz account linking automaticamente (ou não, dependendo config)
-    - [ ] `email_verified = false` do Google → bloqueia criação de conta
-    - [ ] Avatar do Google é persistido e exibido no header/sidebar
-    - [ ] Refresh do cookie de sessão funciona (sessão dura 30 dias, etc.)
-  - **O que validar (automatizado):**
-    - [ ] Teste E2E (Playwright) que mocka o OAuth callback e valida que a sessão é criada (issue 7.5)
-  - **Como testar manualmente:**
-    1. Configurar `GOOGLE_CLIENT_ID` e `GOOGLE_CLIENT_SECRET` no `.env`
-    2. Adicionar callback URL no Google Cloud Console
-    3. Rodar `pnpm dev`, acessar `/auth/sign-in`
-    4. Clicar em "Continuar com Google" → completar OAuth
-    5. Verificar Network tab: callback redireciona pra `/dashboard` com cookie de sessão
-  - **Notas:** documentar qualquer inconsistência encontrada como issue separada; capturar screenshot do user criado no DB pra evidência.
-
-- [ ] [1.5] Remover Auth0 não configurado
-  - **Arquivo(s):** `src/server/auth/config.ts`, `package.json` (checar dep `@auth0/nextjs-auth0`), `.env.example`
-  - **Tipo:** tech-debt
-  - **Severidade:** baixa
-  - **Contexto:** pode haver resíduo de configuração do Auth0 (provider, import, variável de ambiente) que nunca foi usado nesse projeto. Remover pra evitar confusão e reduzir superfície de ataque.
-  - **O que fazer:**
-    - [ ] Procurar `auth0` no codebase: `grep -ri auth0 src/`
-    - [ ] Remover import/provider de `auth.config.ts` se existir
-    - [ ] Remover dependência `@auth0/nextjs-auth0` do `package.json` se estiver lá
-    - [ ] Remover variáveis `AUTH0_*` do `.env.example`
-    - [ ] Rodar `pnpm install` pra atualizar lockfile
-    - [ ] Garantir que o build (`pnpm build`) continua passando
+  - **Contexto:** o escopo de autenticação foi redefinido para Credentials + GitHub apenas. Ainda existiam referências a providers que não seriam usados (Google importado e registrado no auth config; Auth0 importado mas não registrado; Discord listado nas variáveis de ambiente) e variáveis de ambiente desnecessárias. Esses resíduos aumentavam a superfície de ataque e a complexidade de configuração do projeto.
+  - **O que foi feito:**
+    - [x] Remover `GoogleProvider` e seu import de `src/server/auth/config.ts`
+    - [x] Remover `Auth0` e seu import de `src/server/auth/config.ts`
+    - [x] Remover comentários/imports referentes a Discord/Google no `src/server/auth/config.ts`
+    - [x] Remover `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `AUTH_DISCORD_ID`, `AUTH_DISCORD_SECRET` do schema em `src/env.js` (server e runtimeEnv)
+    - [x] Remover variáveis de providers não utilizados do `.env.example` e orientar limpeza do `.env` local
+    - [x] Verificar se existe dependência `@auth0/nextjs-auth0` em `package.json` (não existia)
+    - [x] Atualizar lockfile
   - **Critérios de aceite:**
-    - [ ] Nenhuma referência a `auth0` no código (case-insensitive)
-    - [ ] `package.json` sem dependências Auth0
-    - [ ] Build e sign-in com Credentials e GitHub continuam funcionando
-  - **Como testar:** rodar sign-in flow completo (Credentials + GitHub) após a remoção; nada deve quebrar.
-  - **Notas:** se houver dúvida se algo é Auth0 ou NextAuth, perguntar antes de remover; este repo usa NextAuth v5, não Auth0 diretamente.
+    - [x] Apenas `Credentials` e `GithubProvider` aparecem no array `providers` de `auth.config.ts`
+    - [x] Nenhuma referência a `google`, `auth0` (case-insensitive) ou `discord` no `src/server/auth/config.ts` e `src/env.js`
+    - [x] `.env.example` contém apenas variáveis necessárias para Credentials, GitHub e banco
+    - [x] Build e sign-in com Credentials e GitHub continuam funcionando
+    - [x] Issue #7 é fechada com referência a esta tarefa
+  - **Como testar:**
+    1. Rodar `pnpm check` após as alterações
+    2. Fazer sign-in com Credentials
+    3. Fazer sign-in com GitHub
+    4. Verificar que não há mais erros de variáveis de ambiente faltantes
+  - **Notas:**
+    - A tarefa original de testar Google ([1.4]) foi cancelada por decisão de produto.
+    - `npm run check` ainda aponta erros de lint preexistentes em `src/app/_components/board-dialog/`, mas nenhum deles é causado por esta alteração.
