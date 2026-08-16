@@ -93,7 +93,7 @@ export const authRouter = createTRPCRouter({
           if (!consumed) {
             throw new TRPCError({
               code: 'BAD_REQUEST',
-              message: 'This link was already updated or invalid.',
+              message: 'This verification link was already used or is invalid.',
             });
           }
 

@@ -1,5 +1,3 @@
-import { auth } from '@/server/auth';
-import { redirect } from 'next/navigation';
 import Link from 'next/link';
 
 import {
