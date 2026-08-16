@@ -1,7 +1,9 @@
 import { auth } from '@/server/auth';
 import { api, HydrateClient } from '@/trpc/server';
 import { redirect } from 'next/navigation';
-import { Button } from '@/app/_components/ui/button';
+import { BoardDialogTrigger } from '@/app/_components/board-dialog/board-dialog-trigger';
+import { ActionTypes } from '@/constants';
+import { Plus } from 'lucide-react';
 
 export default async function Home() {
   const session = await auth();
@@ -28,9 +30,13 @@ export default async function Home() {
           <p className="text-muted-foreground text-center text-xl font-bold">
             There are no boards created.
           </p>
-          <Button size="lg" className="w-fit rounded-full">
-            + Add New Column
-          </Button>
+          <BoardDialogTrigger
+            mode={ActionTypes.Create}
+            size="lg"
+            className="w-fit rounded-full"
+          >
+            <Plus /> Create New Board
+          </BoardDialogTrigger>
         </div>
       </main>
     </HydrateClient>
