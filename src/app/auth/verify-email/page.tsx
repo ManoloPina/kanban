@@ -29,7 +29,6 @@ const startedTokens = new Set<string>();
 export default function VerifyEmail() {
   const searchParams = useSearchParams();
   const token = useMemo(() => searchParams.get('token'), [searchParams]);
-  const [isVerifying, setIsVerifying] = useState(false);
   const verifyEmailMutation = api.auth.verifyEmail.useMutation({
     onSuccess: () => {
       toast.success('Email successfully verified');
@@ -37,16 +36,14 @@ export default function VerifyEmail() {
     onError: (err) => {
       toast.error(err.message ?? 'Was not possible to verify this e-mail');
     },
-    onSettled: () => {
-      setIsVerifying(false);
-    },
   });
+
+  const { isPending: isVerifying, isSuccess, isError } = verifyEmailMutation;
 
   useEffect(() => {
     if (!token) return;
     if (startedTokens.has(token)) return;
     startedTokens.add(token);
-    setIsVerifying(true);
     verifyEmailMutation.mutate(
       { token },
       {
@@ -56,9 +53,6 @@ export default function VerifyEmail() {
       },
     );
   }, [token]);
-
-  const isSuccess = verifyEmailMutation.isSuccess;
-  const isError = verifyEmailMutation.isError;
 
   return (
     <div className="bg-background flex h-full min-h-screen w-full p-6">
@@ -99,8 +93,8 @@ export default function VerifyEmail() {
 
                 <Button
                   size="lg"
-                  disabled={!token || isVerifying}
                   className="mt-4 w-full"
+                  disabled={!token || isVerifying || isSuccess}
                   onClick={() => token && verifyEmailMutation.mutate({ token })}
                 >
                   Confirm email address

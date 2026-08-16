@@ -47,6 +47,7 @@ export async function registerUser(
   }
 }
 
-export async function logoutAction() {
+export async function logoutAction(prevState: null) {
   await signOut({ redirectTo: '/auth/sign-in' });
+  return prevState;
 }

@@ -32,7 +32,7 @@ export default function DashboardHeader({}) {
   const [actionType, setActionType] = useQueryState('action-type');
   const [openBoardRemovel, setOpenBoardRemoval] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [state, formAction, isLoggingOut] = useActionState(logoutAction, null);
+  const [, formAction, isLoggingOut] = useActionState(logoutAction, null);
 
   const { data: board, isFetching } = api.board.getBoardById.useQuery(boardId, {
     enabled: !!boardId,
