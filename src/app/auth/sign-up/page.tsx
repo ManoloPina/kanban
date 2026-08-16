@@ -1,5 +1,3 @@
-import { auth } from '@/server/auth';
-import { redirect } from 'next/navigation';
 import Link from 'next/link';
 
 import {
@@ -16,9 +14,6 @@ import { Separator } from '@/app/_components/ui/separator';
 import SignUpForm from '@/app/_components/sign-up-form';
 
 export default async function SignUp() {
-  const session = await auth();
-  if (session?.user) redirect('/');
-
   return (
     <div className="bg-background flex h-full min-h-screen w-full p-6">
       <div className="flex w-full items-center justify-center">

@@ -1,11 +1,12 @@
 'use client';
+import { useState, useActionState } from 'react';
 import { api } from '@/trpc/react';
 import { useParams, useRouter } from 'next/navigation';
 import { useQueryState } from 'nuqs';
 import { toast } from 'sonner';
 import { useBoardDialog } from '@/hooks';
 //Components
-import { EllipsisVertical } from 'lucide-react';
+import { EllipsisVertical, LogOut } from 'lucide-react';
 import { Button } from '@/app/_components/ui/button';
 import {
   DropdownMenu,
@@ -19,7 +20,7 @@ import ConfirmationDialog from './confirmation-dialog';
 //Types
 import { ActionTypes } from '@/constants';
 
-import { useState } from 'react';
+import { logoutAction } from '@/actions/auth';
 
 export default function DashboardHeader({}) {
   const utils = api.useUtils();
@@ -31,6 +32,7 @@ export default function DashboardHeader({}) {
   const [actionType, setActionType] = useQueryState('action-type');
   const [openBoardRemovel, setOpenBoardRemoval] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [, formAction, isLoggingOut] = useActionState(logoutAction, null);
 
   const { data: board, isFetching } = api.board.getBoardById.useQuery(boardId, {
     enabled: !!boardId,
@@ -80,12 +82,18 @@ export default function DashboardHeader({}) {
           </Button>
         </TaskDialog>
 
-        <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
+        <DropdownMenu
+          onOpenChange={(open) => {
+            if (!isLoggingOut) setDropdownOpen(open);
+          }}
+          open={isLoggingOut ? true : dropdownOpen}
+        >
           <DropdownMenuTrigger>
             <EllipsisVertical className="h-5 w-auto" />
           </DropdownMenuTrigger>
-          <DropdownMenuContent className="p-4">
+          <DropdownMenuContent className="min-w-[200px] p-4">
             <DropdownMenuItem
+              className="cursor-pointer hover:!text-white/80"
               onSelect={async (e) => {
                 e.preventDefault();
                 setDropdownOpen(false);
@@ -95,14 +103,29 @@ export default function DashboardHeader({}) {
               Edit Board
             </DropdownMenuItem>
             <DropdownMenuItem
+              className="cursor-pointer hover:!text-white/80"
               onSelect={(e) => {
                 e.preventDefault();
                 setDropdownOpen(false);
                 setOpenBoardRemoval(true);
               }}
-              className="text-red-500"
             >
               Delete Board
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild disabled={isLoggingOut}>
+              <form action={formAction}>
+                <button
+                  type="submit"
+                  disabled={isLoggingOut}
+                  className="group flex w-full cursor-pointer items-center gap-2
+                    hover:text-white/80"
+                >
+                  <LogOut
+                    className="size-4 text-white group-hover:text-white/80"
+                  />
+                  {isLoggingOut ? 'Logging out...' : 'Logout'}
+                </button>
+              </form>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

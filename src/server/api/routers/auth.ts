@@ -84,19 +84,42 @@ export const authRouter = createTRPCRouter({
     .input(verifyEmailSchema)
     .mutation(async ({ input }) => {
       try {
-        const verificationToken = await db.query.verificationTokens.findFirst({
-          where: (u, { eq }) => eq(u.token, input.token),
-        });
-        if (verificationToken) {
-          await db
+        await db.transaction(async (tx) => {
+          const [consumed] = await tx
+            .delete(verificationTokens)
+            .where(eq(verificationTokens.token, input.token))
+            .returning();
+
+          if (!consumed) {
+            throw new TRPCError({
+              code: 'BAD_REQUEST',
+              message: 'This verification link was already used or is invalid.',
+            });
+          }
+
+          if (consumed.expires < new Date()) {
+            throw new TRPCError({
+              code: 'BAD_REQUEST',
+              message: 'Link expired. Request a new verification email.',
+            });
+          }
+
+          const [updatedUser] = await tx
             .update(users)
-            .set({
-              emailVerified: new Date(),
-            })
-            .where(eq(users.email, verificationToken.identifier));
-        }
+            .set({ emailVerified: new Date() })
+            .where(eq(users.email, consumed.identifier))
+            .returning({ id: users.id });
+
+          if (!updatedUser) {
+            throw new TRPCError({
+              code: 'NOT_FOUND',
+              message: 'User not found for this token.',
+            });
+          }
+        });
+        return { success: true };
       } catch (err) {
-        console.error(err);
+        if (err instanceof TRPCError) throw err;
         throw new TRPCError({
           code: 'INTERNAL_SERVER_ERROR',
           message: 'An unexpected error occurred. Please try again.',
