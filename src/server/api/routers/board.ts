@@ -1,5 +1,5 @@
 import { createTRPCRouter, protectedProcedure } from '@/server/api/trpc';
-import { and, eq, inArray } from 'drizzle-orm';
+import { and, eq, inArray, isNull, sql } from 'drizzle-orm';
 import { db } from '@/server/db';
 import { boards, columns, subtasks, tasks } from '../../db/schema';
 import { boardFormSchema, boardUpdateSchema } from '@/model/board';
@@ -34,9 +34,9 @@ export const boardRouter = createTRPCRouter({
       const [todo, doing, done] = await db
         .insert(columns)
         .values([
-          { name: 'TODO', boardId: board.id },
-          { name: 'DOING', boardId: board.id },
-          { name: 'DONE', boardId: board.id },
+          { name: 'TODO', boardId: board.id, position: 0 },
+          { name: 'DOING', boardId: board.id, position: 1 },
+          { name: 'DONE', boardId: board.id, position: 2 },
         ])
         .returning();
 
@@ -128,6 +128,7 @@ export const boardRouter = createTRPCRouter({
           where: (u, { eq }) => eq(u.id, boardId),
           with: {
             columns: {
+              orderBy: (c, { asc }) => [asc(c.position)],
               with: {
                 tasks: {
                   where: (t, { isNull }) => isNull(t.deletedAt),
@@ -155,8 +156,6 @@ export const boardRouter = createTRPCRouter({
   createBoard: protectedProcedure
     .input(boardFormSchema)
     .mutation(async ({ input, ctx }) => {
-      console.log('🚀 ~ ctx:', ctx);
-      console.log('🚀 ~ input:', input);
       return await db.transaction(async (tx) => {
         const [board] = await tx
           .insert(boards)
@@ -185,9 +184,10 @@ export const boardRouter = createTRPCRouter({
         }
 
         await tx.insert(columns).values(
-          cleanedColumns.map((column) => ({
+          cleanedColumns.map((column, i) => ({
             ...column,
             boardId: board.id,
+            position: i,
           })),
         );
         return tx.query.boards.findFirst({
@@ -305,7 +305,23 @@ export const boardRouter = createTRPCRouter({
         }
 
         if (toInsert.length > 0) {
-          await tx.insert(columns).values(toInsert);
+          const maxPositionResult = await tx
+            .select({
+              maxPosition: sql<number>`COALESCE(MAX(${columns.position}), 0)`,
+            })
+            .from(columns)
+            .where(
+              and(eq(columns.boardId, input.id), isNull(columns.deletedAt)),
+            );
+
+          const maxPosition = maxPositionResult[0]?.maxPosition ?? 0;
+
+          await tx.insert(columns).values(
+            toInsert.map((col, i) => ({
+              ...col,
+              position: maxPosition + i + 1,
+            })),
+          );
         }
 
         if (toDelete.length > 0) {
@@ -341,6 +357,7 @@ export const boardRouter = createTRPCRouter({
           with: {
             columns: {
               where: (c, { isNull }) => isNull(c.deletedAt),
+              orderBy: (c, { asc }) => [asc(c.position)],
               with: {
                 tasks: {
                   where: (t, { isNull }) => isNull(t.deletedAt),

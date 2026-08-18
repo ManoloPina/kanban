@@ -130,26 +130,31 @@ export const boards = createTable('board', (d) => ({
   deletedAt: d.timestamp('deleted_at', { withTimezone: true }),
 }));
 
-export const columns = createTable('column', (d) => ({
-  id: d
-    .varchar({ length: 255 })
-    .notNull()
-    .primaryKey()
-    .$default(() => crypto.randomUUID()),
-  name: d.varchar({ length: 255 }).notNull(),
-  boardId: d
-    .varchar('board_id', { length: 255 })
-    .notNull()
-    .references(() => boards.id),
-  createdAt: d
-    .timestamp('created_at', { withTimezone: true })
-    .default(sql`CURRENT_TIMESTAMP`)
-    .notNull(),
-  updatedAt: d
-    .timestamp('updated_at', { withTimezone: true })
-    .$onUpdate(() => new Date()),
-  deletedAt: d.timestamp('deleted_at', { withTimezone: true }),
-}));
+export const columns = createTable(
+  'column',
+  (d) => ({
+    id: d
+      .varchar({ length: 255 })
+      .notNull()
+      .primaryKey()
+      .$default(() => crypto.randomUUID()),
+    name: d.varchar({ length: 255 }).notNull(),
+    boardId: d
+      .varchar('board_id', { length: 255 })
+      .notNull()
+      .references(() => boards.id),
+    position: d.integer('position').notNull().default(0),
+    createdAt: d
+      .timestamp('created_at', { withTimezone: true })
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
+    updatedAt: d
+      .timestamp('updated_at', { withTimezone: true })
+      .$onUpdate(() => new Date()),
+    deletedAt: d.timestamp('deleted_at', { withTimezone: true }),
+  }),
+  (t) => [index('board_id_position_idx').on(t.boardId, t.position)],
+);
 
 export const tasks = createTable('task', (d) => ({
   id: d
