@@ -1,8 +1,9 @@
 'use client';
 import { api } from '@/trpc/react';
 
-import Column from '@/app/_components/column';
+import Column from '@/app/(dashboard)/board/_components/column';
 import { LoaderCircle } from 'lucide-react';
+import { NewColumnInput } from './new-column-input';
 
 export default function BoardClient({ id }: { id: string }) {
   const {
@@ -19,10 +20,11 @@ export default function BoardClient({ id }: { id: string }) {
     );
   }
   return (
-    <div className="flex w-full flex-row gap-6">
+    <div className="flex h-fit w-fit flex-row gap-6">
       {board.columns.map((column) => (
         <Column key={column.id} {...column} boardId={id} />
       ))}
+      <NewColumnInput boardId={board.id} />
     </div>
   );
 }

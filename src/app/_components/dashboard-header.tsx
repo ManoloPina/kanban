@@ -59,7 +59,7 @@ export default function DashboardHeader({}) {
   return (
     <>
       <div
-        className="bg-sidebar border-b-sidebar-ring grid h-[92px] w-full
+        className="bg-sidebar border-b-sidebar-ring grid h-23 w-full shrink-0
           grid-cols-[1fr_repeat(2,max-content)] items-center gap-4 border px-6"
       >
         {isFetching ? (
