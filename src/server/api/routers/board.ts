@@ -125,9 +125,11 @@ export const boardRouter = createTRPCRouter({
     .query(async ({ input: boardId }) => {
       try {
         const board = db.query.boards.findFirst({
-          where: (u, { eq }) => eq(u.id, boardId),
+          where: (u, { eq, and, isNull }) =>
+            and(eq(u.id, boardId), isNull(u.deletedAt)),
           with: {
             columns: {
+              where: (c, { isNull }) => isNull(c.deletedAt),
               orderBy: (c, { asc }) => [asc(c.position)],
               with: {
                 tasks: {

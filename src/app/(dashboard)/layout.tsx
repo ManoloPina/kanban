@@ -14,7 +14,7 @@ export default async function DashboardLayout({
   return (
     <SidebarProvider>
       <AppSidebar />
-      <main className="bg-background w-full">
+      <main className="bg-background flex h-svh w-full flex-col overflow-hidden">
         <DashboardHeader />
         {children}
         <SidebarTrigger className="absolute bottom-2 ml-2" />

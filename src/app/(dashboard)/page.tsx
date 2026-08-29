@@ -23,7 +23,7 @@ export default async function Home() {
   return (
     <HydrateClient>
       <main
-        className="bg-background flex h-[calc(100vh-92px)] flex-row items-center
+        className="bg-background flex h-full flex-row items-center
           justify-center p-6"
       >
         <div className="flex max-w-xl flex-col items-center gap-8">
